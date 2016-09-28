@@ -45,6 +45,7 @@ if [ $volba = "y" ]; then
 			mkdir $cestaPyload
 		fi
 	fi
+	pwd
 	cd $cestaPyload
 	echo "Prejete si oklonovat z github do" $cestaPyload"?"
 	read volba4
@@ -79,9 +80,24 @@ if [ $volba = "y" ]; then
 	sudo python pyLoadCore.py -s
 	echo "Druhe spusteni instalace pyload."
 	sudo python pyLoadCore.py -s
-	#sudo cp myscript.service /lib/systemd/system
-	#sudo systemctl daemon-reload
-	#sudo systemctl enable myscript.service
-#	echo "Instalace PyLoad dokoncena. Po restartu zmenit prava na webu PyLoad - nogroup:nobody a 0777."
+
+sudo cat >/lib/systemd/system/pyload.service <<EOF
+[Unit]
+Description=Pyload deamon
+After=network.target
+[Service]
+ExecStart=/luka/home/pyload/pyload/pyLoadCore.py
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+	sudo systemctl daemon-reload
+	sudo systemctl enable pyload.service
+	echo "Overeni ze je sluzba vytvorena"
+	ls /lib/systemd/system | grep pyload
+	echo "Instalace PyLoad dokoncena. Po restartu zmenit prava na webu PyLoad - nogroup:nobody a 0777."
 fi
 echo "Instalace dokoncena..."
