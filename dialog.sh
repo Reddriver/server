@@ -63,17 +63,12 @@ aktualizujKernel() {
 }
 
 strukturaMenu() {
-        #vytvoreni adresare pro NAS
-        if [ $exitstatus = 0 ]; then
-                #vytvoreni adresare pro NAS
-		if [ $OPTION = 1 ]; then
-			vytvorNAS
-     		#aktualizace kernelu
-		else
-			aktualizujKernel
-		fi
-		menu
-        fi
+	case $OPTION in
+	1) vytvorNAS ;;
+	3) aktualizujKernel ;;
+	*) echo "Neplatná známka" ;;
+	esac
+	menu     
 }
 
 menu() {
@@ -81,9 +76,12 @@ menu() {
 	"1" "Vytvoreni adresare pro NAS" \
 	"2" "Instalace PYLOAD" \
 	"3" "Aktualizace kernelu" \
+	"4" "Restart serveru" \
 	3>&1 1>&2 2>&3)
 	exitstatus=$?
-	strukturaMenu
+	if [ $exitstatus = 0 ]; then
+		strukturaMenu
+	fi
 }
 
 menu
