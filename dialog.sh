@@ -15,7 +15,7 @@ getStatusSudo() {
 	#test sudo opravneni
 	CAN_I_RUN_SUDO=$(sudo -n uptime 2>&1|grep "load"|wc -l)
 	if [ ${CAN_I_RUN_SUDO} = 0 ]; then
-		zadaniHeslaRoot()
+		zadaniHeslaRoot
 	fi
 }
 
