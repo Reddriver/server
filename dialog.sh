@@ -12,16 +12,17 @@ zadaniHeslaRoot() {
 }
 
 getStatusSudo() {
+	#test sudo opravneni
 	CAN_I_RUN_SUDO=$(sudo -n uptime 2>&1|grep "load"|wc -l)
-	if [ ${CAN_I_RUN_SUDO} -gt 0 ]
+	if [ ${CAN_I_RUN_SUDO} = 0 ]
 	then
-   		echo "I can run the sudo command"
-		sleep 5
-	else
-    		echo "I can't run the Sudo command"
-		sleep 5
-		sudo echo "ahoj"
+		zadaniHeslaRoot()
 	fi
+}
+
+restartServeru() {
+	getStatusSudo
+	sudo reboot
 }
 
 vytvorNAS(){
@@ -33,7 +34,7 @@ vytvorNAS(){
                 if [ $exitstatus = 0 ]; then
 	                if [ -d $CESTA ]; then
         	                if ( whiptail --title "Smazat obsah adresare" --yesno "Adresar jiz existuje, chcete vymazat obsah?" 10 60 ); then
-        	                      	zadaniHeslaRoot
+        	                      	getStatusSudo
                                         if [ $exitstatus = 0 ]; then
                  	                       sudo -S <<< $pswd rm -rf $CESTA
                                                vytvorAdresarNAS
@@ -68,7 +69,7 @@ aktualizujKernel() {
 	wget $(lynx -dump -listonly -dont-wrap-pre $kernelURL | grep all | cut -d ' ' -f 4)
 	# Install Kernel
 	echo "Instaluji Linux Kernel"
-	zadaniHeslaRoot
+	getStatusSudo
 	if [ $exitstatus = 0 ]; then
 		sudo -S <<< $pswd dpkg -i linux*.deb
 	fi
@@ -79,7 +80,7 @@ strukturaMenu() {
 	case $OPTION in
 	1) vytvorNAS ;;
 	3) aktualizujKernel ;;
-	5) getStatusSudo ;;
+	4) restartServeru ;;
 	*) echo "Neplatná známka" ;;
 	esac
 	menu     
@@ -91,7 +92,6 @@ menu() {
 	"2" "Instalace PYLOAD" \
 	"3" "Aktualizace kernelu" \
 	"4" "Restart serveru" \
-	"5" "Test sudo" \
 	3>&1 1>&2 2>&3)
 	exitstatus=$?
 	if [ $exitstatus = 0 ]; then
