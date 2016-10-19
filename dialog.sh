@@ -16,8 +16,10 @@ getStatusSudo() {
 	if [ ${CAN_I_RUN_SUDO} -gt 0 ]
 	then
    		echo "I can run the sudo command"
+		sleep 5
 	else
     		echo "I can't run the Sudo command"
+		sleep 5
 		sudo echo "ahoj"
 	fi
 }
