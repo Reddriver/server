@@ -11,6 +11,17 @@ zadaniHeslaRoot() {
          exitstatus=$?
 }
 
+getStatusSudo() {
+	CAN_I_RUN_SUDO=$(sudo -n uptime 2>&1|grep "load"|wc -l)
+	if [ ${CAN_I_RUN_SUDO} -gt 0 ]
+	then
+   		echo "I can run the sudo command"
+	else
+    		echo "I can't run the Sudo command"
+		sudo echo "ahoj"
+	fi
+}
+
 vytvorNAS(){
 	JMENO=$(whiptail --title "Vlastnik NAS" --inputbox "Zadejte jmeno uzivatele" 10 60 luka 3>&1 1>&2 2>&3)
         exitstatus=$?
@@ -66,6 +77,7 @@ strukturaMenu() {
 	case $OPTION in
 	1) vytvorNAS ;;
 	3) aktualizujKernel ;;
+	5) getStatusSudo ;;
 	*) echo "Neplatná známka" ;;
 	esac
 	menu     
@@ -77,6 +89,7 @@ menu() {
 	"2" "Instalace PYLOAD" \
 	"3" "Aktualizace kernelu" \
 	"4" "Restart serveru" \
+	"5" "Test sudo" \
 	3>&1 1>&2 2>&3)
 	exitstatus=$?
 	if [ $exitstatus = 0 ]; then
