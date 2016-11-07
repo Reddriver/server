@@ -85,7 +85,6 @@ void setup() {
 
 void loop() {
   if (client.available()) {
-    Serial.println("Zpracovani requestu");
     zpracovaniRequest();
   }else {
     nactiTeplotu();
