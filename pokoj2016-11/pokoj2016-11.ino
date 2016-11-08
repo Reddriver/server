@@ -42,8 +42,8 @@ const unsigned long postingInterval = 900L * 1000L; // delay between updates, in
 unsigned long lastConnectionTime2 = 0;             // last time you connected to the server, in milliseconds
 const unsigned long postingInterval2 = 900L * 1000L; // delay between updates, in milliseconds
 // the "L" is needed to use long type numbers
-unsigned long lastConnectionTime3 = 0;   
-const unsigned long postingInterval3 = 30L * 1000L;
+//unsigned long lastConnectionTime3 = 0;   
+//const unsigned long postingInterval3 = 30L * 1000L;
 
 void nastavCas(){
   rtc.setDOW(SUNDAY);
@@ -91,9 +91,10 @@ void loop() {
   }else {
     nactiTeplotu();
     nactiVlhkost();
-    if (millis() - lastConnectionTime3 > postingInterval3) {
-      nactiCas();   
-    } 
+    //if (millis() - lastConnectionTime3 > postingInterval3) {
+    //  nactiCas();   
+    //} 
+    nactiCas();   
     delay(1000);   
   }    
   if (millis() - lastConnectionTime > postingInterval) {
@@ -148,11 +149,11 @@ void nactiCas(){
   lcd.print(".");
   lcd.print(t.mon);
   lcd.print(".");
-  lastConnectionTime3= millis();
+  //lastConnectionTime3= millis();
 }
 void zpracovaniRequest(){
   char c = client.read();
-  //Serial.print(c);
+  Serial.print(c);
   if (c == '%'){
     start = true;
     teplotaVenku = "";
