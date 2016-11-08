@@ -38,10 +38,12 @@ Time t;
 IPAddress server(192,168,2,2);
 DHT dht(DHTPIN, DHTTYPE);
 unsigned long lastConnectionTime = 0;             // last time you connected to the server, in milliseconds
-const unsigned long postingInterval = 900L * 1000L; // delay between updates, in milliseconds
+const unsigned long postingInterval = 10L * 1000L; // delay between updates, in milliseconds
 unsigned long lastConnectionTime2 = 0;             // last time you connected to the server, in milliseconds
-const unsigned long postingInterval2 = 900L * 1000L; // delay between updates, in milliseconds
+const unsigned long postingInterval2 = 10L * 1000L; // delay between updates, in milliseconds
 // the "L" is needed to use long type numbers
+unsigned long lastConnectionTime3 = 0;   
+const unsigned long postingInterval3 = 30L * 1000L;
 
 void nastavCas(){
   rtc.setDOW(SUNDAY);
@@ -89,8 +91,10 @@ void loop() {
   }else {
     nactiTeplotu();
     nactiVlhkost();
-    nactiCas(); 
-    delay(60000);   
+    if (millis() - lastConnectionTime3 > postingInterval3) {
+      nactiCas();   
+    } 
+    delay(1000);   
   }    
   if (millis() - lastConnectionTime > postingInterval) {
     httpRequest(1);
@@ -144,28 +148,32 @@ void nactiCas(){
   lcd.print(".");
   lcd.print(t.mon);
   lcd.print(".");
+  lastConnectionTime3= millis();
 }
 void zpracovaniRequest(){
   char c = client.read();
-    if (c == '<'){
-      start = true;
-      teplotaVenku = "";
-      lcd.setCursor(15,2);
-      lcd.print("     ");
-      lcd.setCursor(15,2);
-    }
-    if (c == '>'){
-      konec = true;
-    }  
-    if (start == true && c != '<' && c != '>'){
-      teplotaVenku += c;
-    }  
-    if(c == '>'){
-      start = false;
-      konec = false;
-      lcd.print(teplotaVenku);
-      Serial.println(teplotaVenku);
-    }
+  //Serial.print(c);
+  if (c == '%'){
+    start = true;
+    teplotaVenku = "";
+    lcd.setCursor(15,2);
+    lcd.print("     ");
+    lcd.setCursor(15,2);
+  }
+  if (c == '*'){
+    konec = true;
+  }  
+  if (start == true && c != '%' && c != '*'){
+    teplotaVenku += c;
+  }  
+  if(c == '*'){
+    start = false;
+    konec = false;
+    lcd.print(teplotaVenku);
+    Serial.println();
+    Serial.print("teplota venku: ");
+    Serial.println(teplotaVenku); 
+  }
 }
 
 // this method makes a HTTP connection to the server:
@@ -174,7 +182,10 @@ void httpRequest(int cidlo) {
 
   // if there's a successful connection:
   if (client.connect(server, 80)) {
-    Serial.println("connecting...");
+    Serial.println();
+    Serial.print("connecting...cidlo: ");
+    Serial.print(cidlo);
+    Serial.print(" hodnota = ");
     client.print("GET /insert.php?");
     client.print("serial=");
     if(cidlo == 1){
@@ -186,6 +197,7 @@ void httpRequest(int cidlo) {
       client.print("hodnota=");
       client.print(teplotaDoma);          
       lastConnectionTime = millis();
+      Serial.println(teplotaDoma);
     }else{
       client.print(serialCidla2);
       client.print("&&");
@@ -194,6 +206,7 @@ void httpRequest(int cidlo) {
       client.print("&&");
       client.print("hodnota=");
       client.print(vlhkostDoma);
+      Serial.println(vlhkostDoma);
       lastConnectionTime2
       = millis();
     }   
