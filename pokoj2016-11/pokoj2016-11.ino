@@ -38,12 +38,12 @@ Time t;
 IPAddress server(192,168,2,2);
 DHT dht(DHTPIN, DHTTYPE);
 unsigned long lastConnectionTime = 0;             // last time you connected to the server, in milliseconds
-const unsigned long postingInterval = 900L * 1000L; // delay between updates, in milliseconds
+const unsigned long postingInterval = 300L * 1000L; // delay between updates, in milliseconds
 unsigned long lastConnectionTime2 = 0;             // last time you connected to the server, in milliseconds
-const unsigned long postingInterval2 = 900L * 1000L; // delay between updates, in milliseconds
+const unsigned long postingInterval2 = 300L * 1000L; // delay between updates, in milliseconds
 // the "L" is needed to use long type numbers
-//unsigned long lastConnectionTime3 = 0;   
-//const unsigned long postingInterval3 = 30L * 1000L;
+unsigned long lastConnectionTime3 = 0;   
+const unsigned long postingInterval3 = 30L * 1000L;
 
 void nastavCas(){
   rtc.setDOW(SUNDAY);
@@ -89,12 +89,12 @@ void loop() {
   if (client.available()) {
     zpracovaniRequest();
   }else {
-    nactiTeplotu();
-    nactiVlhkost();
-    //if (millis() - lastConnectionTime3 > postingInterval3) {
-    //  nactiCas();   
-    //} 
-    nactiCas();   
+    if (millis() - lastConnectionTime3 > postingInterval3) {
+      nactiCas(); 
+      nactiTeplotu();
+      nactiVlhkost();  
+      lastConnectionTime3= millis();
+    }  
     delay(1000);   
   }    
   if (millis() - lastConnectionTime > postingInterval) {
@@ -112,7 +112,7 @@ void nactiTeplotu(){
   lcd.setCursor(15,0);
   lcd.print("     ");
   lcd.setCursor(15,0);
-  lcd.print(teplotaDoma);
+  lcd.print(teplotaDoma,1);
 }
 
 void nactiVlhkost(){
@@ -125,7 +125,8 @@ void nactiVlhkost(){
   lcd.setCursor(15,1);
   lcd.print("     ");
   lcd.setCursor(15,1);
-  lcd.print(vlhkostDoma); 
+  lcd.print(vlhkostDoma,0); 
+  lcd.print("%");
 }
 
 void nactiCas(){
@@ -148,8 +149,7 @@ void nactiCas(){
   lcd.print(t.date, DEC);
   lcd.print(".");
   lcd.print(t.mon);
-  lcd.print(".");
-  //lastConnectionTime3= millis();
+  lcd.print(".");  
 }
 void zpracovaniRequest(){
   char c = client.read();
@@ -170,7 +170,8 @@ void zpracovaniRequest(){
   if(c == '*'){
     start = false;
     konec = false;
-    lcd.print(teplotaVenku);
+    float temp = teplotaVenku.toFloat();
+    lcd.print(temp,1);
     Serial.println();
     Serial.print("teplota venku: ");
     Serial.println(teplotaVenku); 
