@@ -27,6 +27,7 @@ endif;
     $sqlTeplotaVenku = "SELECT * FROM zaznamy where id_veliciny = 1 order by cas DESC LIMIT 1";
     $sqlTeplotaDoma = "SELECT * FROM zaznamy where id_veliciny = 3 order by cas DESC LIMIT 1";
     $sqlVlhkostDoma = "SELECT * FROM zaznamy where id_veliciny = 4 order by cas DESC LIMIT 1";
+    $sqlTeplotaObyvak = "SELECT * FROM zaznamy where id_veliciny = 5 order by cas DESC LIMIT 1";
     ?>
 	</head>
 	<body>
@@ -60,6 +61,7 @@ endif;
           $this.nastavBudik($conn, $sqlTeplotaVenku, "Teplota venku:"); 
           $this.nastavBudik($conn, $sqlTeplotaDoma, "Teplota doma:");
           $this.nastavBudik($conn, $sqlVlhkostDoma, "Vlhkost doma:"); 
+          $this.nastavBudik($conn, $sqlTeplotaObyvak, "Teplota obyvak:"); 
           ?>          
       </div>       
       <div class="slunce">
