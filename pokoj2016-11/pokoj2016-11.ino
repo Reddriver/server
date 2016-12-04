@@ -33,7 +33,13 @@ char serialCidla[] = "28FF5526440400E2";
 char serialCidla2[] = "dht22_doma";
 boolean start = false;
 boolean konec = false;
-String teplotaVenku = "";
+boolean start2 = false;
+boolean konec2 = false;
+float teplotaVenku;
+String teplotaObyvak = "";
+boolean startProgramu = true;
+String temp;
+String temp2;
 Time t;
 IPAddress server(192,168,2,2);
 DHT dht(DHTPIN, DHTTYPE);
@@ -43,7 +49,7 @@ unsigned long lastConnectionTime2 = 0;             // last time you connected to
 const unsigned long postingInterval2 = 300L * 1000L; // delay between updates, in milliseconds
 // the "L" is needed to use long type numbers
 unsigned long lastConnectionTime3 = 0;   
-const unsigned long postingInterval3 = 30L * 1000L;
+const unsigned long postingInterval3 = 10L * 1000L;
 
 void nastavCas(){
   rtc.setDOW(SUNDAY);
@@ -68,14 +74,8 @@ void setup() {
   // print the Ethernet board/shield's IP address:
   Serial.print("My IP address: ");
   Serial.println(Ethernet.localIP());
+  nastavObrazovku1();
 
-  lcd.setCursor(0,0);
-  lcd.print("Teplota doma: "); 
-  lcd.setCursor(0,1);
-  lcd.print("Vlhkost doma: ");
-  lcd.setCursor(0,2);
-  lcd.print("Teplota venku: "); 
-  
   sensors.begin();
   delay(2000);
   nactiTeplotu();
@@ -85,16 +85,53 @@ void setup() {
   httpRequest(2);
 }
 
+void nastavObrazovku1() {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Teplota doma: "); 
+  lcd.setCursor(0,1);
+  lcd.print("Vlhkost doma: ");
+  lcd.setCursor(0,2);
+  lcd.print("Teplota venku: ");  
+  nactiCas();  
+  if(startProgramu == false){     
+    lcd.setCursor(15,0);
+    lcd.print("     ");
+    lcd.setCursor(15,0);
+    lcd.print(teplotaDoma,1);
+    lcd.setCursor(15,1);
+    lcd.print("     ");
+    lcd.setCursor(15,1);
+    lcd.print(vlhkostDoma,0); 
+    lcd.print("%");
+    lcd.setCursor(15,2);
+    lcd.print(teplotaVenku,1);
+  }else{
+    Serial.println("start"); 
+    startProgramu=false;
+  }
+}
+
+void nastavObrazovku2() {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Teplota obyvak: "); 
+}
 void loop() {
   if (client.available()) {
     zpracovaniRequest();
   }else {
     if (millis() - lastConnectionTime3 > postingInterval3) {
-      nactiCas(); 
+      nastavObrazovku1();      
+      nastavObrazovku2();     
+      delay(10000);
+      nastavObrazovku1();
+      //nactiCas(); 
       nactiTeplotu();
       nactiVlhkost();  
       lastConnectionTime3= millis();
-    }  
+    }
+      
     delay(1000);   
   }    
   if (millis() - lastConnectionTime > postingInterval) {
@@ -109,10 +146,6 @@ void loop() {
 void nactiTeplotu(){
   sensors.requestTemperatures(); 
   teplotaDoma = sensors.getTempCByIndex(0);
-  lcd.setCursor(15,0);
-  lcd.print("     ");
-  lcd.setCursor(15,0);
-  lcd.print(teplotaDoma,1);
 }
 
 void nactiVlhkost(){
@@ -121,12 +154,6 @@ void nactiVlhkost(){
     Serial.println("Failed to read from DHT sensor!");
     return;
   } 
-  
-  lcd.setCursor(15,1);
-  lcd.print("     ");
-  lcd.setCursor(15,1);
-  lcd.print(vlhkostDoma,0); 
-  lcd.print("%");
 }
 
 void nactiCas(){
@@ -156,25 +183,44 @@ void zpracovaniRequest(){
   Serial.print(c);
   if (c == '%'){
     start = true;
-    teplotaVenku = "";
-    lcd.setCursor(15,2);
-    lcd.print("     ");
-    lcd.setCursor(15,2);
   }
   if (c == '*'){
     konec = true;
   }  
   if (start == true && c != '%' && c != '*'){
-    teplotaVenku += c;
-  }  
+    temp += c;
+  }
+
   if(c == '*'){
     start = false;
-    konec = false;
-    float temp = teplotaVenku.toFloat();
-    lcd.print(temp,1);
+    konec = false;    
+//    teplotaVenku = temp.toFloat();
+//    temp = "";
     Serial.println();
     Serial.print("teplota venku: ");
-    Serial.println(teplotaVenku); 
+    Serial.println(temp); 
+  }
+}
+
+void zpracovaniRequest2(){
+  char c = client.read();
+  if (c == '#'){
+    start2 = true;
+  }
+  if (c == '@'){
+    konec2 = true;
+  }  
+  if (start2 == true && c != '#' && c != '@'){
+    temp2 += c;
+  }  
+  if(c == '@'){
+    start2 = false;
+    konec2 = false;    
+    teplotaObyvak = temp2.toFloat();
+    temp2 = "";
+    Serial.println();
+    Serial.print("teplota obyvak: ");
+    Serial.println(teplotaObyvak); 
   }
 }
 

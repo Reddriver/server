@@ -35,7 +35,8 @@ if (isset($_GET["serial"]) && isset($_GET["id_veliciny"]) && isset($_GET["hodnot
 	$conn =  mysqli_connect($hostname, $username, $password, $dbname);
 	$sql = "INSERT INTO zaznamy (cidlo, id_veliciny, hodnota) VALUES ('" . $cidlo . "', " . $id_veliciny . ", " . $hodnota . ")";
 	$sql2 = "select hodnota from zaznamy where id_veliciny = 1 order by cas DESC LIMIT 1";
-
+	$sql3 = "select hodnota from zaznamy where id_veliciny = 5 order by cas DESC LIMIT 1";
+	
 	if ($conn->query($sql) === TRUE) {
 		echo " Zaznam do mysql ulozen!";
 	} else {
@@ -43,15 +44,27 @@ if (isset($_GET["serial"]) && isset($_GET["id_veliciny"]) && isset($_GET["hodnot
 	}
 
 	$result = $conn->query($sql2);
+	$result2 = $conn->query($sql3);
+	$predani = "";
 
 	if ($result->num_rows > 0) {
-    // output data of each row
 	    while($row = $result->fetch_assoc()) {
-	        echo "<br> Predan zaznam pro domaciMeteo: %" . number_format($row["hodnota"],2) . "*";
+	        //echo "<br> Predan zaznam pro domaciMeteo: %" . number_format($row["hodnota"],2) . "*";
+	        $predani = $predani . number_format($row["hodnota"],2);
 	    }
 	} else {
     	echo "0 results";
 	}
+
+	if ($result2->num_rows > 0) {
+		while($row2 = $resul2->fetch_assoc()) {
+			 $predani = $predani . number_format($row2["hodnota"],2);
+			//echo "<br> Predan zaznam2 pro domaciMeteo: %" . number_format($row["hodnota"],2) . "*";
+		}
+	} else {
+		echo "0 results";
+	}
+	echo "<br> Predan zaznam2 pro domaciMeteo: %" . predani . "*";
 
 	$conn->close();
 }else{
