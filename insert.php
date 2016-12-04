@@ -57,7 +57,7 @@ if (isset($_GET["serial"]) && isset($_GET["id_veliciny"]) && isset($_GET["hodnot
 	}
 
 	if ($result2->num_rows > 0) {
-		while($row2 = $resul2->fetch_assoc()) {
+		while($row2 = $result2->fetch_assoc()) {
 			 $predani = $predani . number_format($row2["hodnota"],2);
 			//echo "<br> Predan zaznam2 pro domaciMeteo: %" . number_format($row["hodnota"],2) . "*";
 		}
