@@ -56,7 +56,7 @@ void loop() {
     return;
   }
   
-  String url = "/insert.php?serial=teplotaVenku&&id_veliciny=5&&hodnota=";
+  String url = "/insert.php?serial=teplotaObyvak&&id_veliciny=5&&hodnota=";
   url += temperatureString;
   Serial.println(url);
     
