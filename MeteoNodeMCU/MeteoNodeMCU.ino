@@ -13,8 +13,8 @@
 #define ONE_WIRE_BUS D1
 
 const char* ssid     = "Prochazkovi";
-const char* password = "aximGAM123";
-const char* host = "farma.trianglstudio.cz";
+const char* password = "xxx";
+const char* host = "xxx";
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
