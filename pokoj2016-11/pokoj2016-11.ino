@@ -37,7 +37,6 @@ float teplotaVenku;
 float teplotaObyvak;
 boolean startProgramu = true;
 String temp;
-String temp2;
 Time t;
 IPAddress server(192,168,2,2);
 DHT dht(DHTPIN, DHTTYPE);
@@ -201,9 +200,7 @@ void zpracovaniRequest(){
 
   if(c == '*'){
     start = false;
-    konec = false;    
-//    teplotaVenku = temp.toFloat();
-//    temp = "";
+    konec = false; 
     zpracovaniPredanehoRetezce();
   }
 }
@@ -220,6 +217,7 @@ void zpracovaniPredanehoRetezce() {
   Serial.println(teplotaVenku);
   Serial.print("Teplota obyvak: ");
   Serial.println(teplotaObyvak);
+  temp = "";
 }
 
 

@@ -59,8 +59,8 @@ endif;
             echo '</p></div>';
           }
           $this.nastavBudik($conn, $sqlTeplotaVenku, "Teplota venku:"); 
-          $this.nastavBudik($conn, $sqlTeplotaDoma, "Teplota doma:");
-          $this.nastavBudik($conn, $sqlVlhkostDoma, "Vlhkost doma:"); 
+          $this.nastavBudik($conn, $sqlTeplotaDoma, "Teplota pokoj:");
+          $this.nastavBudik($conn, $sqlVlhkostDoma, "Vlhkost pokoj:"); 
           $this.nastavBudik($conn, $sqlTeplotaObyvak, "Teplota obyvak:"); 
           ?>          
       </div>       
@@ -152,8 +152,9 @@ endif;
               </td><td>
               <select class="id" id="id" name="id" size="1" style="width:150px;">
                 <option value="1">Teplota venku
-                <option value="3">Teplota doma              
-                <option value="4">Vlhkost doma
+                <option value="3">Teplota pokoj             
+                <option value="4">Vlhkost pokoj
+                <option value="5">Teplota obyvak
               </select>
               </td></tr><tr><td>
               <label class="labelPocet" for="text">Počet posledních záznamů:</label>
