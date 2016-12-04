@@ -25,18 +25,16 @@ EthernetClient client;
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
-float teplotaDoma;
-float vlhkostDoma;
+float teplotaPokoj;
+float vlhkostPokoj;
 int id_teploty = 3;
 int id_vlhkosti = 4;
 char serialCidla[] = "28FF5526440400E2";
 char serialCidla2[] = "dht22_doma";
 boolean start = false;
 boolean konec = false;
-boolean start2 = false;
-boolean konec2 = false;
 float teplotaVenku;
-String teplotaObyvak = "";
+float teplotaObyvak;
 boolean startProgramu = true;
 String temp;
 String temp2;
@@ -86,28 +84,36 @@ void setup() {
 }
 
 void nastavObrazovku1() {
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Teplota doma: "); 
-  lcd.setCursor(0,1);
-  lcd.print("Vlhkost doma: ");
-  lcd.setCursor(0,2);
-  lcd.print("Teplota venku: ");  
-  nactiCas();  
+  lcd.clear();  
   if(startProgramu == false){     
+    nactiCas();  
+    lcd.setCursor(0,0);
+    lcd.print("Teplota pokoj: "); 
+    lcd.setCursor(0,1);
+    lcd.print("Vlhkost pokoj: ");
+    lcd.setCursor(0,2);
+    lcd.print("Teplota venku: ");  
     lcd.setCursor(15,0);
     lcd.print("     ");
     lcd.setCursor(15,0);
-    lcd.print(teplotaDoma,1);
+    lcd.print(teplotaPokoj,1);
     lcd.setCursor(15,1);
     lcd.print("     ");
     lcd.setCursor(15,1);
-    lcd.print(vlhkostDoma,0); 
+    lcd.print(vlhkostPokoj,0); 
     lcd.print("%");
     lcd.setCursor(15,2);
     lcd.print(teplotaVenku,1);
   }else{
     Serial.println("start"); 
+    lcd.setCursor(3,0);
+    lcd.print("Startuji meteo");
+    lcd.setCursor(7,1);
+    lcd.print("stanici"); 
+    lcd.setCursor(2,2);
+    lcd.print("verze 4.12.2016"); 
+    lcd.setCursor(2,3);
+    lcd.print("Lukas Prochazka"); 
     startProgramu=false;
   }
 }
@@ -116,6 +122,7 @@ void nastavObrazovku2() {
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Teplota obyvak: "); 
+  lcd.print(teplotaObyvak,1);
 }
 void loop() {
   if (client.available()) {
@@ -145,12 +152,12 @@ void loop() {
 
 void nactiTeplotu(){
   sensors.requestTemperatures(); 
-  teplotaDoma = sensors.getTempCByIndex(0);
+  teplotaPokoj = sensors.getTempCByIndex(0);
 }
 
 void nactiVlhkost(){
-  vlhkostDoma = dht.readHumidity();
-  if (isnan(vlhkostDoma)) {
+  vlhkostPokoj = dht.readHumidity();
+  if (isnan(vlhkostPokoj)) {
     Serial.println("Failed to read from DHT sensor!");
     return;
   } 
@@ -178,6 +185,7 @@ void nactiCas(){
   lcd.print(t.mon);
   lcd.print(".");  
 }
+
 void zpracovaniRequest(){
   char c = client.read();
   Serial.print(c);
@@ -196,33 +204,24 @@ void zpracovaniRequest(){
     konec = false;    
 //    teplotaVenku = temp.toFloat();
 //    temp = "";
-    Serial.println();
-    Serial.print("teplota venku: ");
-    Serial.println(temp); 
+    zpracovaniPredanehoRetezce();
   }
 }
 
-void zpracovaniRequest2(){
-  char c = client.read();
-  if (c == '#'){
-    start2 = true;
-  }
-  if (c == '@'){
-    konec2 = true;
-  }  
-  if (start2 == true && c != '#' && c != '@'){
-    temp2 += c;
-  }  
-  if(c == '@'){
-    start2 = false;
-    konec2 = false;    
-    teplotaObyvak = temp2.toFloat();
-    temp2 = "";
-    Serial.println();
-    Serial.print("teplota obyvak: ");
-    Serial.println(teplotaObyvak); 
-  }
+void zpracovaniPredanehoRetezce() {
+  Serial.println();
+  Serial.print("Predany retezec: ");
+  Serial.println(temp); 
+  //teplotaVenku = temp.toFloat();
+  int pozice = temp.indexOf(';');
+  teplotaVenku = temp.substring(0, pozice).toFloat();
+  teplotaObyvak = temp.substring(pozice+1).toFloat();
+  Serial.print("Teplota venku: ");
+  Serial.println(teplotaVenku);
+  Serial.print("Teplota obyvak: ");
+  Serial.println(teplotaObyvak);
 }
+
 
 // this method makes a HTTP connection to the server:
 void httpRequest(int cidlo) {
@@ -243,9 +242,9 @@ void httpRequest(int cidlo) {
       client.print(id_teploty);
       client.print("&&");
       client.print("hodnota=");
-      client.print(teplotaDoma);          
+      client.print(teplotaPokoj);          
       lastConnectionTime = millis();
-      Serial.println(teplotaDoma);
+      Serial.println(teplotaPokoj);
     }else{
       client.print(serialCidla2);
       client.print("&&");
@@ -253,8 +252,8 @@ void httpRequest(int cidlo) {
       client.print(id_vlhkosti);
       client.print("&&");
       client.print("hodnota=");
-      client.print(vlhkostDoma);
-      Serial.println(vlhkostDoma);
+      client.print(vlhkostPokoj);
+      Serial.println(vlhkostPokoj);
       lastConnectionTime2
       = millis();
     }   
