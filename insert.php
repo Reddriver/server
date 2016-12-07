@@ -42,7 +42,7 @@ if (isset($_GET["serial"]) && isset($_GET["id_veliciny"]) && isset($_GET["hodnot
 	} else {
 		echo "Error: " . $sql . "<br>" . $conn->error;
 	}
-	$xml = file_get_contents("http://reddriver.tmep.cz/?temp=50");
+	
 	
 	$result = $conn->query($sql2);
 	$result2 = $conn->query($sql3);
@@ -68,5 +68,7 @@ if (isset($_GET["serial"]) && isset($_GET["id_veliciny"]) && isset($_GET["hodnot
 	$conn->close();
 }else{
 	echo "Neni predan nektery z parametru metodou GET!";
+	$xml = file_get_contents("http://reddriver.tmep.cz/?temp=50");
+	echo $xml;
 }
 ?>
