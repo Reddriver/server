@@ -14,19 +14,22 @@ if (isset($_GET["serial"]) && isset($_GET["id_veliciny"]) && isset($_GET["hodnot
 
   if($hodnota < 45 && $hodnota > -30){
     if($id_veliciny == 1) {	
-  		$retVal = rrd_update("/var/www/html/teplotyVenku.rrd", (array)"N:$hodnota");
-      echo "Ulozeno do RRD = " . $retVal;
+	$retVal = rrd_update("/var/www/html/teplotyVenku.rrd", (array)"N:$hodnota");	    
+	echo "Ulozeno do RRD = " . $retVal;	
+	$xml = file_get_contents("http://reddriver.tmep.cz/?temp=" . $hodnota);
     }
     if($id_veliciny == 3) {
-  	  $retVal = rrd_update("/var/www/html/teploty.rrd", (array)"N:$hodnota");
+	$retVal = rrd_update("/var/www/html/teploty.rrd", (array)"N:$hodnota");
+	$xml = file_get_contents("http://reddriver.tmep.cz/?temp2=" . $hodnota);
       echo "Ulozeno do RRD = " . $retVal;
     }    
 	}	
 
   if($hodnota < 95 && $hodnota > 30){
   	if($id_veliciny == 4) {
-		  $retVal = rrd_update("/var/www/html/vlhkosti.rrd", (array)"N:$hodnota");
-      echo "Ulozeno do RRD = " . $retVal;
+		$retVal = rrd_update("/var/www/html/vlhkosti.rrd", (array)"N:$hodnota");
+      		echo "Ulozeno do RRD = " . $retVal;
+		$xml = file_get_contents("http://reddriver.tmep.cz/?humV=" . $hodnota);
 	 }
   }  
   
@@ -68,7 +71,5 @@ if (isset($_GET["serial"]) && isset($_GET["id_veliciny"]) && isset($_GET["hodnot
 	$conn->close();
 }else{
 	echo "Neni predan nektery z parametru metodou GET!";
-	$xml = file_get_contents("http://reddriver.tmep.cz/?temp=50");
-	echo $xml;
 }
 ?>
