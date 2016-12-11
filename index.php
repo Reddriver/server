@@ -106,9 +106,7 @@ endif;
         <li><a href="logout.php">Odhlášení</a></li>   	
 			</ul> 
 			<div id="tab1" style="display: block; ">
-        			<iframe width="894.5" height="553.0991666666666" seamless frameborder="0" 
-					scrolling="no" 
-					src="https://docs.google.com/spreadsheets/d/16S7DH3KHAPtCYsDDqmO8qETbtDD1mT-YXjU3XLjUyaw/pubchart?oid=580305300&amp;format=interactive">
+        			<iframe width="894.5" height="553.0991666666666" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/16S7DH3KHAPtCYsDDqmO8qETbtDD1mT-YXjU3XLjUyaw/pubchart?oid=580305300&amp;format=interactive">
 				<p style="text-align:center"><img src="grafy/tempVenku_2hour.png" alt="tempVenku_2hour"></p>
 				<p style="text-align:center"><img src="grafy/temp_2hour.png" alt="temp_2hour"></p>
 				<p style="text-align:center"><img src="grafy/hum_2hour.png" alt="hum_2hour"></p> 
