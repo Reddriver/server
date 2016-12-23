@@ -17,6 +17,9 @@ if (isset($_GET["serial"]) && isset($_GET["id_veliciny"]) && isset($_GET["hodnot
 	$retVal = rrd_update("/var/www/html/teplotyVenku.rrd", (array)"N:$hodnota");	    
 	echo "Ulozeno do RRD = " . $retVal;	
 	$xml = file_get_contents("http://reddriver.tmep.cz/?temp=" . $hodnota);
+	$xmlText = "https://script.google.com/macros/s/AKfycbx0HXK9ciYqRig6dqfV2_JSCoDO9g4OBdM8ye1q_764Xxra7Us/exec?teplota=" . $hodnota;
+	echo $xmlText;
+	$xml2 = file_get_contents($xmlText);
     }
     if($id_veliciny == 3) {
 	$retVal = rrd_update("/var/www/html/teploty.rrd", (array)"N:$hodnota");
