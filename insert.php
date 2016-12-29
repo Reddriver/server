@@ -35,12 +35,7 @@ $teplotaVenku = json_decode($json1);
 $teplotaObyvak = json_decode($json2);
 
 echo "Předávám: ";
-
 if(is_numeric($teplotaVenku->teplota)){
-  echo "%" . round($teplotaVenku->teplota, 1) . "*";
-}
-
-if(is_numeric($teplotaObyvak->teplota)){
-  echo "@" . round($teplotaObyvak->teplota, 1) . "§";
+  echo "%" . round($teplotaVenku->teplota, 1) . ";" . round($teplotaObyvak->teplota, 1) . "*";
 }
 ?>
