@@ -2,10 +2,10 @@
 #include <Ethernet.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <Wire.h>  
+#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <DS3231.h>
-#include "DHT.h" 
+#include "DHT.h"
 
 byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
@@ -38,17 +38,14 @@ float teplotaObyvak;
 boolean startProgramu = true;
 String temp;
 Time t;
-IPAddress server(192,168,2,2);
+IPAddress server(192, 168, 2, 2);
 DHT dht(DHTPIN, DHTTYPE);
 unsigned long lastConnectionTime = 0;             // last time you connected to the server, in milliseconds
-const unsigned long postingInterval = 300L * 1000L; // delay between updates, in milliseconds
-unsigned long lastConnectionTime2 = 0;             // last time you connected to the server, in milliseconds
-const unsigned long postingInterval2 = 300L * 1000L; // delay between updates, in milliseconds
-// the "L" is needed to use long type numbers
-unsigned long lastConnectionTime3 = 0;   
-const unsigned long postingInterval3 = 10L * 1000L;
+const unsigned long postingInterval = 900L * 1000L; // delay between updates, in milliseconds
+unsigned long lastConnectionTime2 = 0;
+const unsigned long postingInterval2 = 10L * 1000L;
 
-void nastavCas(){
+void nastavCas() {
   rtc.setDOW(THURSDAY);
   rtc.setTime(19, 51, 0);     // Set the time to 12:00:00 (24hr format)
   rtc.setDate(29, 12, 2016);   // Set the date to January 1st, 2014
@@ -60,7 +57,7 @@ void setup() {
   // start serial port:
   Serial.begin(9600);
   dht.begin();
-  lcd.begin(20,4);
+  lcd.begin(20, 4);
   sensors.begin();
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
@@ -76,131 +73,123 @@ void setup() {
   sensors.begin();
   delay(2000);
   nactiTeplotu();
-  httpRequest(1);
-  delay(4000);
   nactiVlhkost();
-  httpRequest(2);
+  httpRequest();
+  delay(4000);  
 }
 
 void nastavObrazovku1() {
-  lcd.clear();  
-  if(startProgramu == false){     
-    nactiCas();  
-    lcd.setCursor(0,0);
-    lcd.print("Teplota pokoj: "); 
-    lcd.setCursor(0,1);
+  lcd.clear();
+  if (startProgramu == false) {
+    nactiCas();
+    lcd.setCursor(0, 0);
+    lcd.print("Teplota pokoj: ");
+    lcd.setCursor(0, 1);
     lcd.print("Vlhkost pokoj: ");
-    lcd.setCursor(0,2);
-    lcd.print("Teplota venku: ");  
-    lcd.setCursor(15,0);
+    lcd.setCursor(0, 2);
+    lcd.print("Teplota venku: ");
+    lcd.setCursor(15, 0);
     lcd.print("     ");
-    lcd.setCursor(15,0);
-    lcd.print(teplotaPokoj,1);
-    lcd.setCursor(15,1);
+    lcd.setCursor(15, 0);
+    lcd.print(teplotaPokoj, 1);
+    lcd.setCursor(15, 1);
     lcd.print("     ");
-    lcd.setCursor(15,1);
-    lcd.print(vlhkostPokoj,0); 
+    lcd.setCursor(15, 1);
+    lcd.print(vlhkostPokoj, 0);
     lcd.print("%");
-    lcd.setCursor(15,2);
-    lcd.print(teplotaVenku,1);
-  }else{
-    Serial.println("start"); 
-    lcd.setCursor(3,0);
+    lcd.setCursor(15, 2);
+    lcd.print(teplotaVenku, 1);
+  } else {
+    Serial.println("start");
+    lcd.setCursor(3, 0);
     lcd.print("Startuji meteo");
-    lcd.setCursor(7,1);
-    lcd.print("stanici"); 
-    lcd.setCursor(2,2);
-    lcd.print("verze 29.12.2016"); 
-    lcd.setCursor(2,3);
-    lcd.print("Lukas Prochazka"); 
-    startProgramu=false;
+    lcd.setCursor(7, 1);
+    lcd.print("stanici");
+    lcd.setCursor(2, 2);
+    lcd.print("verze 2.1.2017");
+    lcd.setCursor(2, 3);
+    lcd.print("Lukas Prochazka");
+    startProgramu = false;
   }
 }
 
 void nastavObrazovku2() {
   lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Teplota obyvak: "); 
-  lcd.print(teplotaObyvak,1);
+  lcd.setCursor(0, 0);
+  lcd.print("Teplota obyvak: ");
+  lcd.print(teplotaObyvak, 1);
 }
 void loop() {
   if (client.available()) {
     zpracovaniRequest();
-  }else {
-    if (millis() - lastConnectionTime3 > postingInterval3) {
-      nastavObrazovku1();      
-      nastavObrazovku2();     
+  } else {
+    if (millis() - lastConnectionTime2 > postingInterval2) {
+      nastavObrazovku1();
+      nastavObrazovku2();
       delay(10000);
       nastavObrazovku1();
-      //nactiCas(); 
       nactiTeplotu();
-      nactiVlhkost();  
-      lastConnectionTime3= millis();
+      nactiVlhkost();
+      lastConnectionTime2 = millis();
     }
-      
-    delay(1000);   
-  }    
-  if (millis() - lastConnectionTime > postingInterval) {
-    httpRequest(1);
+    delay(1000);
   }
-
-  if (millis() - lastConnectionTime2 > postingInterval2) {
-    httpRequest(2);
-  }  
+  if (millis() - lastConnectionTime > postingInterval) {
+    httpRequest();
+  }
 }
 
-void nactiTeplotu(){
-  sensors.requestTemperatures(); 
+void nactiTeplotu() {
+  sensors.requestTemperatures();
   teplotaPokoj = sensors.getTempCByIndex(0);
 }
 
-void nactiVlhkost(){
+void nactiVlhkost() {
   vlhkostPokoj = dht.readHumidity();
   if (isnan(vlhkostPokoj)) {
     Serial.println("Failed to read from DHT sensor!");
     return;
-  } 
+  }
 }
 
-void nactiCas(){
-  lcd.setCursor(0,3);
+void nactiCas() {
+  lcd.setCursor(0, 3);
   lcd.print("                    ");
-  lcd.setCursor(0,3);
+  lcd.setCursor(0, 3);
   lcd.print(rtc.getDOWStr());
   lcd.print(" ");
   t = rtc.getTime();
-  if (t.hour<10){   // Add a zero, if necessary, as above
+  if (t.hour < 10) { // Add a zero, if necessary, as above
     lcd.print(0);
   }
-  lcd.print(t.hour, DEC); 
+  lcd.print(t.hour, DEC);
   lcd.print(":");
-  if (t.min<10){   // Add a zero, if necessary, as above
+  if (t.min < 10) { // Add a zero, if necessary, as above
     lcd.print(0);
   }
-  lcd.print(t.min, DEC); 
+  lcd.print(t.min, DEC);
   lcd.print(" ");
   lcd.print(t.date, DEC);
   lcd.print(".");
   lcd.print(t.mon);
-  lcd.print(".");  
+  lcd.print(".");
 }
 
-void zpracovaniRequest(){
+void zpracovaniRequest() {
   char c = client.read();
-  Serial.print(c);
-  if (c == '%'){
+  if (c == '%') {
     start = true;
   }
-  if (c == '*'){
+  if (c == '*') {
     konec = true;
-  }  
-  if (start == true && c != '%' && c != '*'){
+  }
+  if (start == true && c != '%' && c != '*') {
     temp += c;
   }
 
-  if(c == '*'){
+  if (c == '*') {
     start = false;
-    konec = false; 
+    konec = false;
     zpracovaniPredanehoRetezce();
   }
 }
@@ -208,11 +197,10 @@ void zpracovaniRequest(){
 void zpracovaniPredanehoRetezce() {
   Serial.println();
   Serial.print("Predany retezec: ");
-  Serial.println(temp); 
-  //teplotaVenku = temp.toFloat();
+  Serial.println(temp);
   int pozice = temp.indexOf(';');
   teplotaVenku = temp.substring(0, pozice).toFloat();
-  teplotaObyvak = temp.substring(pozice+1).toFloat();
+  teplotaObyvak = temp.substring(pozice + 1).toFloat();
   Serial.print("Teplota venku: ");
   Serial.println(teplotaVenku);
   Serial.print("Teplota obyvak: ");
@@ -222,44 +210,28 @@ void zpracovaniPredanehoRetezce() {
 
 
 // this method makes a HTTP connection to the server:
-void httpRequest(int cidlo) {
+void httpRequest() {
   client.stop();
-
-  // if there's a successful connection:
   if (client.connect(server, 80)) {
     Serial.println();
-    Serial.print("connecting...cidlo: ");
-    Serial.print(cidlo);
-    Serial.print(" hodnota = ");
-    client.print("GET /insert.php?");
-    client.print("serial=");
-    if(cidlo == 1){
-      client.print(serialCidla);
-      client.print("&&");
-      client.print("id_veliciny=");
-      client.print(id_teploty);
-      client.print("&&");
-      client.print("hodnota=");
-      client.print(teplotaPokoj);          
-      lastConnectionTime = millis();
-      Serial.println(teplotaPokoj);
-    }else{
-      client.print(serialCidla2);
-      client.print("&&");
-      client.print("id_veliciny=");
-      client.print(id_vlhkosti);
-      client.print("&&");
-      client.print("hodnota=");
-      client.print(vlhkostPokoj);
-      Serial.println(vlhkostPokoj);
-      lastConnectionTime2
-      = millis();
-    }   
+    Serial.print("connecting... ");
+    client.print("GET /insert.php?serial=");
+    client.print(serialCidla);
+    client.print("&id_veliciny=");
+    client.print(id_teploty);
+    client.print("&hodnota=");
+    client.print(teplotaPokoj);
+    client.print("&vlhkost=");
+    client.print(vlhkostPokoj);
     client.println( " HTTP/1.1");
     client.println( "Host: www.xxx.com" );//ur web server
     client.println( "Content-Type: application/x-www-form-urlencoded" );
     client.println( "Connection: close" );
-    client.println();    
+    client.println();
+    lastConnectionTime = millis();
+
+    Serial.println(teplotaPokoj);
+    Serial.println(vlhkostPokoj);
   } else {
     // if you couldn't make a connection:
     Serial.println("connection failed");
