@@ -12,9 +12,9 @@
 
 #define ONE_WIRE_BUS D1
 
-const char* ssid     = "Prochazkovi";
+const char* ssid     = "xxx17";
 const char* password = "xxx";
-const char* host = "xxx";
+const char* host = "xxx.tmep.cz";
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
@@ -56,7 +56,7 @@ void loop() {
     return;
   }
   
-  String url = "/insert.php?serial=teplotaObyvak&&id_veliciny=5&&hodnota=";
+  String url = "/?temp5=";
   url += temperatureString;
   Serial.println(url);
     
@@ -83,4 +83,3 @@ void loop() {
   Serial.println("closing connection");
   delay(300000);
 }
-
