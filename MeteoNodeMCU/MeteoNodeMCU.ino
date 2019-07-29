@@ -12,7 +12,7 @@
 
 #define ONE_WIRE_BUS D1
 
-const char* ssid     = "xxx17";
+const char* ssid     = "xxx";
 const char* password = "xxx";
 const char* host = "xxx.tmep.cz";
 
@@ -46,6 +46,7 @@ int value = 0;
 void loop() { 
   ++value;
   float temperature = getTemperature();
+  Serial.println(temperature);
   dtostrf(temperature, 2, 2, temperatureString);
   
   // Use WiFiClient class to create TCP connections
