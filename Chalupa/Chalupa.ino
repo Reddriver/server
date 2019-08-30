@@ -39,9 +39,19 @@
      
     char server[] = "reddriver4.tmep.cz";   // domain.tmep.cz
     char guid[] = "temp1";        // guid
+    
+    char server2[] = "reddriver6.tmep.cz";   // domain.tmep.cz
+    char guid2[] = "temp1";        // guid
+     
+    char server3[] = "reddriver7.tmep.cz";   // domain.tmep.cz
+    char guid3[] = "temp1";        // guid
      
     unsigned long lastConnectionTime = 0;              // last time you connected to the server, in milliseconds
     const unsigned long postingInterval = 60L * 1000L; // delay between updates, in milliseconds
+    unsigned long lastConnectionTime2 = 0;              // last time you connected to the server, in milliseconds
+    const unsigned long postingInterval2 = 60L * 1000L; // delay between updates, in milliseconds
+    unsigned long lastConnectionTime3 = 0;              // last time you connected to the server, in milliseconds
+    const unsigned long postingInterval3 = 60L * 1000L; // delay between updates, in milliseconds
     // the "L" is needed to use long type numbers
      
     void setup() {
@@ -113,7 +123,13 @@
       if (millis() - lastConnectionTime > postingInterval) {
         httpRequest();
       }
-     
+      if (millis() - lastConnectionTime2 > postingInterval2) {
+        httpRequest2();
+      }
+      
+      if (millis() - lastConnectionTime3 > postingInterval3) {
+        httpRequest3();
+      }
     }
      
     // this method makes a HTTP connection to the server:
@@ -129,8 +145,8 @@
       Serial.println("DONE");
       // After we got the temperatures, we can print them here.
       // We use the function ByIndex, and as an example get the temperature from the first sensor only.
-      Serial.print("Temperature for the device 1 (index 0) is: ");
-      float t = sensors.getTempCByIndex(0); // Read temperature in "t" variable
+      Serial.print("Temperature for ObyvakChalupa (index 0) is: ");
+      float t = sensors.getTempCByIndex(2); // Read temperature in "t" variable
       if (t == -127.00) {                   // If you have connected it wrong, Dallas read this temperature! :)
         Serial.println("Error!");
         return;
@@ -158,9 +174,97 @@
       } else {
         // if you couldn't make a connection:
         Serial.println(" connection failed");
-      }
+      }    
     }
+    
+    void httpRequest2() {
+      // close any connection before send a new request.
+      // This will free the socket on the WiFi shield
+      client.stop();
      
+      // call sensors.requestTemperatures() to issue a global temperature 
+      // request to all devices on the bus
+      Serial.print("Requesting temperatures...");
+      sensors.requestTemperatures(); // Send the command to get temperatures
+      Serial.println("DONE");
+      // After we got the temperatures, we can print them here.
+      // We use the function ByIndex, and as an example get the temperature from the first sensor only.
+      Serial.print("Temperature for DetskyPokojChalupa (index 1) is: ");
+      float t2 = sensors.getTempCByIndex(1); // Read temperature in "t" variable
+      if (t2 == -127.00) {                   // If you have connected it wrong, Dallas read this temperature! :)
+        Serial.println("Error!");
+        return;
+      }
+      Serial.println(t2);
+     
+      // if there's a successful connection:
+      if (client.connect(server2, 80)) {
+        Serial.print("connecting...");
+        // send the HTTP GET request:
+        client.print("GET /?");
+        client.print(guid2);
+        client.print("=");
+        client.print(t2);
+        client.println(" HTTP/1.1");
+        client.print("Host: ");
+        client.println(server2);
+        client.println("User-Agent: arduino-ethernet");
+        client.println("Connection: close");
+        client.println();
+     
+        Serial.println(" done.");
+        // note the time that the connection was made:
+        lastConnectionTime2 = millis();
+      } else {
+        // if you couldn't make a connection:
+        Serial.println(" connection failed");
+      }       
+    }
+    
+    void httpRequest3() {
+      // close any connection before send a new request.
+      // This will free the socket on the WiFi shield
+      client.stop();
+     
+      // call sensors.requestTemperatures() to issue a global temperature 
+      // request to all devices on the bus
+      Serial.print("Requesting temperatures...");
+      sensors.requestTemperatures(); // Send the command to get temperatures
+      Serial.println("DONE");
+      // After we got the temperatures, we can print them here.
+      // We use the function ByIndex, and as an example get the temperature from the first sensor only.
+      Serial.print("Temperature for LozniceChalupa (index 2) is: ");
+      float t3 = sensors.getTempCByIndex(0); // Read temperature in "t" variable
+      if (t3 == -127.00) {                   // If you have connected it wrong, Dallas read this temperature! :)
+        Serial.println("Error!");
+        return;
+      }
+      Serial.println(t3);
+     
+      // if there's a successful connection:
+      if (client.connect(server3, 80)) {
+        Serial.print("connecting...");
+        // send the HTTP GET request:
+        client.print("GET /?");
+        client.print(guid3);
+        client.print("=");
+        client.print(t3);
+        client.println(" HTTP/1.1");
+        client.print("Host: ");
+        client.println(server3);
+        client.println("User-Agent: arduino-ethernet");
+        client.println("Connection: close");
+        client.println();
+     
+        Serial.println(" done.");
+        // note the time that the connection was made:
+        lastConnectionTime3 = millis();
+      } else {
+        // if you couldn't make a connection:
+        Serial.println(" connection failed");
+      }  
+    }
+    
     void printIPAddress()
     {
       Serial.print("My IP address: ");
