@@ -1,19 +1,3 @@
-    /*
-     
-     Simple sketch for sending data to the TMEP.cz 
-     
-     This sketch connects to a a web server and makes a request
-     using a Wiznet Ethernet shield. You can use the Arduino Ethernet shield, or
-     the Adafruit Ethernet shield, either one will work, as long as it's got
-     a Wiznet Ethernet module on board.
-     
-     Uses code examples:
-     
-     http://www.arduino.cc/en/Tutorial/WebClientRepeating
-     http://www.arduino.cc/en/Tutorial/DhcpAddressPrinter
-     
-     */
-     
     #include <SPI.h>
     #include <Ethernet.h>
     #include <OneWire.h>
@@ -45,13 +29,18 @@
      
     char server3[] = "reddriver7.tmep.cz";   // domain.tmep.cz
     char guid3[] = "temp1";        // guid
-     
+
+    char server4[] = "reddriver.tmep.cz";   // domain.tmep.cz
+    char guid4[] = "temp1";        // guid
+    
     unsigned long lastConnectionTime = 0;              // last time you connected to the server, in milliseconds
-    const unsigned long postingInterval = 60L * 1000L; // delay between updates, in milliseconds
+    const unsigned long postingInterval = 10L * 1000L; // delay between updates, in milliseconds
     unsigned long lastConnectionTime2 = 0;              // last time you connected to the server, in milliseconds
-    const unsigned long postingInterval2 = 60L * 1000L; // delay between updates, in milliseconds
+    const unsigned long postingInterval2 = 10L * 1000L; // delay between updates, in milliseconds
     unsigned long lastConnectionTime3 = 0;              // last time you connected to the server, in milliseconds
-    const unsigned long postingInterval3 = 60L * 1000L; // delay between updates, in milliseconds
+    const unsigned long postingInterval3 = 10L * 1000L; // delay between updates, in milliseconds
+    unsigned long lastConnectionTime4 = 0;              // last time you connected to the server, in milliseconds
+    const unsigned long postingInterval4 = 10L * 1000L; // delay between updates, in milliseconds
     // the "L" is needed to use long type numbers
      
     void setup() {
@@ -60,9 +49,10 @@
       while (!Serial) {
         ; // wait for serial port to connect. Needed for native USB port only
       }
-     
+      Serial.println("Minutove cekani na pripravenost routeru po restartu elektriny.");
       // give the ethernet module time to boot up:
-      delay(1000);
+      delay(postingInterval);  // vychozi 1000ms, zvyseno na minutu pro pripravenost routeru po restartu elektriny
+      //delay(1000);  // testovaci 1000ms
       // start the Ethernet connection:
       if (Ethernet.begin(mac) == 0) {
         Serial.println("Failed to configure Ethernet using DHCP");
@@ -106,10 +96,8 @@
         default:
           //nothing happened
           break;
-      }
-     
-     
-     
+      }   
+    
       // if there's incoming data from the net connection.
       // send it out the serial port.  This is for debugging
       // purposes only:
@@ -118,8 +106,8 @@
         //Serial.write(c);
       }
      
-      // if ten seconds have passed since your last connection,
-      // then connect again and send data:
+//       if ten seconds have passed since your last connection,
+//       then connect again and send data:
       if (millis() - lastConnectionTime > postingInterval) {
         httpRequest();
       }
@@ -129,6 +117,10 @@
       
       if (millis() - lastConnectionTime3 > postingInterval3) {
         httpRequest3();
+      }
+
+      if (millis() - lastConnectionTime4 > postingInterval4) {
+        httpRequest4();
       }
     }
      
@@ -146,7 +138,7 @@
       // After we got the temperatures, we can print them here.
       // We use the function ByIndex, and as an example get the temperature from the first sensor only.
       Serial.print("Temperature for ObyvakChalupa (index 0) is: ");
-      float t = sensors.getTempCByIndex(2); // Read temperature in "t" variable
+      float t = sensors.getTempCByIndex(3); // Read temperature in "t" variable
       if (t == -127.00) {                   // If you have connected it wrong, Dallas read this temperature! :)
         Serial.println("Error!");
         return;
@@ -190,7 +182,7 @@
       // After we got the temperatures, we can print them here.
       // We use the function ByIndex, and as an example get the temperature from the first sensor only.
       Serial.print("Temperature for DetskyPokojChalupa (index 1) is: ");
-      float t2 = sensors.getTempCByIndex(1); // Read temperature in "t" variable
+      float t2 = sensors.getTempCByIndex(2); // Read temperature in "t" variable
       if (t2 == -127.00) {                   // If you have connected it wrong, Dallas read this temperature! :)
         Serial.println("Error!");
         return;
@@ -259,6 +251,50 @@
         Serial.println(" done.");
         // note the time that the connection was made:
         lastConnectionTime3 = millis();
+      } else {
+        // if you couldn't make a connection:
+        Serial.println(" connection failed");
+      }  
+    }
+
+    void httpRequest4() {
+      // close any connection before send a new request.
+      // This will free the socket on the WiFi shield
+      client.stop();
+     
+      // call sensors.requestTemperatures() to issue a global temperature 
+      // request to all devices on the bus
+      Serial.print("Requesting temperatures...");
+      sensors.requestTemperatures(); // Send the command to get temperatures
+      Serial.println("DONE");
+      // After we got the temperatures, we can print them here.
+      // We use the function ByIndex, and as an example get the temperature from the first sensor only.
+      Serial.print("Temperature for BratronovVenku (index 3) is: ");
+      float t4 = sensors.getTempCByIndex(1); // Read temperature in "t" variable
+      if (t4 == -127.00) {                   // If you have connected it wrong, Dallas read this temperature! :)
+        Serial.println("Error!");
+        return;
+      }
+      Serial.println(t4);
+     
+      // if there's a successful connection:
+      if (client.connect(server3, 80)) {
+        Serial.print("connecting...");
+        // send the HTTP GET request:
+        client.print("GET /?");
+        client.print(guid3);
+        client.print("=");
+        client.print(t4);
+        client.println(" HTTP/1.1");
+        client.print("Host: ");
+        client.println(server4);
+        client.println("User-Agent: arduino-ethernet");
+        client.println("Connection: close");
+        client.println();
+     
+        Serial.println(" done.");
+        // note the time that the connection was made:
+        lastConnectionTime4 = millis();
       } else {
         // if you couldn't make a connection:
         Serial.println(" connection failed");
