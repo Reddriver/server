@@ -27,34 +27,25 @@ OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 float teplotaPokoj;
 float vlhkostPokoj;
-int id_teploty = 3;
-int id_vlhkosti = 4;
 char serialCidla[] = "28FF5526440400E2";
 char serialCidla2[] = "dht22_doma";
-boolean start = false;
-boolean konec = false;
-float teplotaVenku;
-float teplotaObyvak;
 boolean startProgramu = true;
-String temp;
 Time t;
-IPAddress server(192, 168, 2, 2);
+char server[] = "reddriver2.tmep.cz";   // domain.tmep.cz
+char guid[] = "temp2";        // guid
 DHT dht(DHTPIN, DHTTYPE);
 unsigned long lastConnectionTime = 0;             // last time you connected to the server, in milliseconds
-const unsigned long postingInterval = 900L * 1000L; // delay between updates, in milliseconds
-unsigned long lastConnectionTime2 = 0;
-const unsigned long postingInterval2 = 10L * 1000L;
+const unsigned long postingInterval = 60L * 1000L; // delay between updates, in milliseconds
 
 void nastavCas() {
   rtc.setDOW(THURSDAY);
-  rtc.setTime(19, 51, 0);     // Set the time to 12:00:00 (24hr format)
-  rtc.setDate(29, 12, 2016);   // Set the date to January 1st, 2014
+  rtc.setTime(17, 57, 0);     // Set the time to 12:00:00 (24hr format)
+  rtc.setDate(04, 03, 2020);   // Set the date to January 1st, 2014
 }
 
 void setup() {
   rtc.begin();
-  //nastavCas();
-  // start serial port:
+//  nastavCas();
   Serial.begin(9600);
   dht.begin();
   lcd.begin(20, 4);
@@ -68,13 +59,10 @@ void setup() {
   // print the Ethernet board/shield's IP address:
   Serial.print("My IP address: ");
   Serial.println(Ethernet.localIP());
-  nastavObrazovku1();
-
+  nastavObrazovku1();  
+  startProgramu = false;
+  provedCinnosti();
   sensors.begin();
-  delay(2000);
-  nactiTeplotu();
-  nactiVlhkost();
-  httpRequest();
   delay(4000);  
 }
 
@@ -87,8 +75,6 @@ void nastavObrazovku1() {
     lcd.setCursor(0, 1);
     lcd.print("Vlhkost pokoj: ");
     lcd.setCursor(0, 2);
-    lcd.print("Teplota venku: ");
-    lcd.setCursor(15, 0);
     lcd.print("     ");
     lcd.setCursor(15, 0);
     lcd.print(teplotaPokoj, 1);
@@ -97,8 +83,6 @@ void nastavObrazovku1() {
     lcd.setCursor(15, 1);
     lcd.print(vlhkostPokoj, 0);
     lcd.print("%");
-    lcd.setCursor(15, 2);
-    lcd.print(teplotaVenku, 1);
   } else {
     Serial.println("start");
     lcd.setCursor(3, 0);
@@ -106,37 +90,25 @@ void nastavObrazovku1() {
     lcd.setCursor(7, 1);
     lcd.print("stanici");
     lcd.setCursor(2, 2);
-    lcd.print("verze 2.1.2017");
+    lcd.print("verze 4.3.2020");
     lcd.setCursor(2, 3);
     lcd.print("Lukas Prochazka");
     startProgramu = false;
   }
 }
 
-void nastavObrazovku2() {
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Teplota obyvak: ");
-  lcd.print(teplotaObyvak, 1);
-}
-void loop() {
-  if (client.available()) {
-    zpracovaniRequest();
-  } else {
-    if (millis() - lastConnectionTime2 > postingInterval2) {
-      nastavObrazovku1();
-      nastavObrazovku2();
-      delay(10000);
-      nastavObrazovku1();
-      nactiTeplotu();
-      nactiVlhkost();
-      lastConnectionTime2 = millis();
-    }
-    delay(1000);
-  }
+void loop() {  
   if (millis() - lastConnectionTime > postingInterval) {
-    httpRequest();
+    provedCinnosti();
   }
+  delay(10000);
+}
+
+void provedCinnosti(){
+  nactiTeplotu();
+  nactiVlhkost();
+  nastavObrazovku1();
+  httpRequest();
 }
 
 void nactiTeplotu() {
@@ -175,66 +147,30 @@ void nactiCas() {
   lcd.print(".");
 }
 
-void zpracovaniRequest() {
-  char c = client.read();
-  if (c == '%') {
-    start = true;
-  }
-  if (c == '*') {
-    konec = true;
-  }
-  if (start == true && c != '%' && c != '*') {
-    temp += c;
-  }
 
-  if (c == '*') {
-    start = false;
-    konec = false;
-    zpracovaniPredanehoRetezce();
-  }
-}
-
-void zpracovaniPredanehoRetezce() {
-  Serial.println();
-  Serial.print("Predany retezec: ");
-  Serial.println(temp);
-  int pozice = temp.indexOf(';');
-  teplotaVenku = temp.substring(0, pozice).toFloat();
-  teplotaObyvak = temp.substring(pozice + 1).toFloat();
-  Serial.print("Teplota venku: ");
-  Serial.println(teplotaVenku);
-  Serial.print("Teplota obyvak: ");
-  Serial.println(teplotaObyvak);
-  temp = "";
-}
-
-
-// this method makes a HTTP connection to the server:
 void httpRequest() {
-  client.stop();
+  // if there's a successful connection:
   if (client.connect(server, 80)) {
-    Serial.println();
-    Serial.print("connecting... ");
-    client.print("GET /insert.php?serial=");
-    client.print(serialCidla);
-    client.print("&id_veliciny=");
-    client.print(id_teploty);
-    client.print("&hodnota=");
+    Serial.print("connecting...");
+    // send the HTTP GET request:
+    client.print("GET /?");
+    client.print(guid);
+    client.print("=");
     client.print(teplotaPokoj);
-    client.print("&vlhkost=");
+    client.print("&humV=");
     client.print(vlhkostPokoj);
-    client.println( " HTTP/1.1");
-    client.println( "Host: www.xxx.com" );//ur web server
-    client.println( "Content-Type: application/x-www-form-urlencoded" );
-    client.println( "Connection: close" );
+    client.println(" HTTP/1.1");
+    client.print("Host: ");
+    client.println(server);
+    client.println("User-Agent: arduino-ethernet");
+    client.println("Connection: close");
     client.println();
+ 
+    Serial.println(" done.");
+    // note the time that the connection was made:
     lastConnectionTime = millis();
-
-    Serial.println(teplotaPokoj);
-    Serial.println(vlhkostPokoj);
   } else {
     // if you couldn't make a connection:
-    Serial.println("connection failed");
-  }
+    Serial.println(" connection failed");
+  }    
 }
-
